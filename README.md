@@ -164,13 +164,13 @@ In production, `.env` simply overrides each `IQ_<PRODUCT>_URL` to its `*.axisone
 
 | Product | Connector | Notes |
 |---|---|---|
-| Field (AxisField, `nosaas`) | ✅ implemented | Branch `axis-iq-connector` off `nosaas` in the AxisField repo, **not pushed yet**. Uses a shared service token, not per-user auth — see `connectors/field.md`. |
-| View | not started | |
+| Field (AxisField, `nosaas`) | ✅ implemented, ✅ verified live end-to-end | Branch `axis-iq-connector` off `nosaas` in the AxisField repo, **not pushed yet**. Shared service token, not per-user auth — see `connectors/field.md`. Real queries ("technicians working today", "job completion rate this week") answered correctly through the full pipeline: widget-shaped request → Axis IQ Core → Claude tool-calling → AxisField's live API → natural-language answer. |
+| View | 📝 contract drafted from live traffic, not implemented | RFI read shape reverse-engineered from the real app's network calls (no codebase access yet) — see `connectors/view.md`. Same shared-token auth gap as Field, plus an unresolved multi-project (`pid`) selector Field never needed. Needs a developer with actual View codebase access to build it. |
 | Financial | not started | |
 | Flow | not started | |
 | Estimate | not started | |
 
-`core/` (Axis IQ Core) is scaffolded and runs: Laravel app, `POST /api/query` route, Claude tool-calling orchestrator, per-product config/auth, conversation audit log. Verified so far: routing, validation, and the full call chain up to the Claude API call itself. **Not yet verified: an actual live answer**, which needs (a) a real `ANTHROPIC_API_KEY` and (b) Field's `IQ_FIELD_API_TOKEN` (from AxisField → Settings → "Axis IQ API token") in Axis IQ Core's `.env`.
+`core/` (Axis IQ Core) is scaffolded and runs: Laravel app, `POST /api/query` route, Claude tool-calling orchestrator, per-product config/auth, conversation audit log. **Verified live end-to-end against Field** — real `ANTHROPIC_API_KEY` and `IQ_FIELD_API_TOKEN` configured, real questions answered correctly, conversation log recording tool calls and answers.
 
 ## 8. Roadmap
 
