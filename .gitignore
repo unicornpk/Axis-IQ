@@ -1,0 +1,3 @@
+# Scratch/local files not part of the project
+*.log
+.DS_Store
