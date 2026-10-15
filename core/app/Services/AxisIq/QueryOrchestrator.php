@@ -42,7 +42,7 @@ class QueryOrchestrator
         for ($i = 0; $i < $maxIterations; $i++) {
             $response = $this->claude->send($messages, $tools, $system);
             $content = $response['content'] ?? [];
-            $messages[] = ['role' => 'assistant', 'content' => $content];
+            $messages[] = ['role' => 'assistant', 'content' => $this->normalizeToolUseInput($content)];
 
             $toolUses = collect($content)->where('type', 'tool_use')->values();
 
@@ -86,6 +86,26 @@ class QueryOrchestrator
         } catch (Throwable $e) {
             return ['error' => 'Failed to fetch data from the product: '.$e->getMessage()];
         }
+    }
+
+    /**
+     * json_decode() turns a tool call's empty `"input": {}` into an empty
+     * PHP array, which re-encodes as `[]` instead of `{}` when we echo the
+     * assistant's turn back to Claude on the next round trip — Anthropic's
+     * API then rejects it as the wrong type. Force it back to an object.
+     *
+     * @param  array<int, array<string, mixed>>  $content
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeToolUseInput(array $content): array
+    {
+        foreach ($content as &$block) {
+            if (($block['type'] ?? null) === 'tool_use' && empty($block['input'])) {
+                $block['input'] = new \stdClass();
+            }
+        }
+
+        return $content;
     }
 
     private function extractText(array $content): string

@@ -31,7 +31,7 @@ AxisField's connector does **not** use the end user's own session/token — `nos
 
 ## Tools
 
-### `field.technicians_working_today`
+### `field_technicians_working_today`
 - **Endpoint:** `GET /api/iq/technicians-working-today`
 - **Description:** Count and status breakdown of technicians working today.
 - **Parameters:** none
@@ -46,7 +46,7 @@ AxisField's connector does **not** use the end user's own session/token — `nos
 { "count": 14, "as_of": "2026-10-15T09:02:00+05:00", "breakdown": { "on_site": 9, "en_route": 5, "off_today": 3, "available": 2 } }
 ```
 
-### `field.technicians`
+### `field_technicians`
 - **Endpoint:** `GET /api/iq/technicians?status={on_site|en_route|off_today|available}&date={YYYY-MM-DD|today}`
 - **Description:** List of technicians matching a status/date filter. For a **past** date, buckets are derived from that day's recorded timesheets only (not live status).
 - **Parameters:** `status` (optional), `date` (optional, default `today`)
@@ -56,7 +56,7 @@ AxisField's connector does **not** use the end user's own session/token — `nos
 ```
 `site` is a formatted `"Client · Site"` string, not separate fields. `clocked_in_at` is the start time of the relevant running/recorded timesheet, if any.
 
-### `field.jobs_today`
+### `field_jobs_today`
 - **Endpoint:** `GET /api/iq/jobs-today?status={open|completed|all}`
 - **Description:** Jobs scheduled for today. Note: `count` reflects the `status` filter, but `completed` and `open` in the response are **always totals**, regardless of the filter.
 - **Parameters:** `status` (optional, default `all`)
@@ -65,7 +65,7 @@ AxisField's connector does **not** use the end user's own session/token — `nos
 { "count": 22, "completed": 15, "open": 7 }
 ```
 
-### `field.job_completion_rate`
+### `field_job_completion_rate`
 - **Endpoint:** `GET /api/iq/job-completion-rate?period={today|this_week|this_month}`
 - **Description:** Percentage of scheduled jobs completed in the given period. Weeks start Monday.
 - **Parameters:** `period` (default `today`)

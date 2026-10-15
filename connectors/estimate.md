@@ -7,7 +7,7 @@ Auth: same middleware as the rest of Estimate. Every endpoint is scoped to the a
 
 ## Tools
 
-### `estimate.open_estimates_count`
+### `estimate_open_estimates_count`
 - **Endpoint:** `GET /open-estimates-count?status={draft|submitted|won|lost|all}`
 - **Description:** Count of estimates matching a status.
 - **Parameters:** `status` (default `draft`)
@@ -16,7 +16,7 @@ Auth: same middleware as the rest of Estimate. Every endpoint is scoped to the a
 { "status": "draft", "count": 9 }
 ```
 
-### `estimate.estimates`
+### `estimate_estimates`
 - **Endpoint:** `GET /estimates?status={draft|submitted|won|lost|all}&client_id={optional}`
 - **Description:** List of estimates matching a filter.
 - **Parameters:** `status` (optional), `client_id` (optional)
@@ -25,7 +25,7 @@ Auth: same middleware as the rest of Estimate. Every endpoint is scoped to the a
 { "data": [ { "id": 212, "client": "Al-Noor Constructions", "amount": 1250000.00, "status": "submitted", "submitted_on": "2026-10-10" } ] }
 ```
 
-### `estimate.win_rate`
+### `estimate_win_rate`
 - **Endpoint:** `GET /win-rate?period={this_quarter|this_year}`
 - **Description:** Percentage of submitted estimates that converted to won jobs in a period.
 - **Parameters:** `period` (default `this_quarter`)
@@ -34,7 +34,7 @@ Auth: same middleware as the rest of Estimate. Every endpoint is scoped to the a
 { "period": "this_quarter", "submitted": 24, "won": 9, "rate": 0.375 }
 ```
 
-### `estimate.pending_approval`
+### `estimate_pending_approval`
 - **Endpoint:** `GET /pending-approval`
 - **Description:** Count and list of estimates awaiting internal approval before being sent to the client.
 - **Parameters:** none

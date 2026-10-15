@@ -6,16 +6,25 @@ return [
     |--------------------------------------------------------------------
     | Anthropic / Claude
     |--------------------------------------------------------------------
+    |
+    | Deliberately namespaced as IQ_ANTHROPIC_* rather than plain
+    | ANTHROPIC_*: some hosts/containers set bare ANTHROPIC_* env vars for
+    | their own unrelated tooling, and PHP's env() reads real process env
+    | vars ahead of .env — a bare name here can silently pick up a value
+    | that was never meant for this app (this bit us once in dev: an
+    | ambient ANTHROPIC_BASE_URL override pointed requests at the wrong
+    | host). Keep the IQ_ prefix even though it's more typing.
+    |
     */
     'anthropic' => [
-        'api_key' => env('ANTHROPIC_API_KEY'),
-        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
-        'max_tokens' => (int) env('ANTHROPIC_MAX_TOKENS', 1024),
-        'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
-        'version' => env('ANTHROPIC_VERSION', '2023-06-01'),
+        'api_key' => env('IQ_ANTHROPIC_API_KEY'),
+        'model' => env('IQ_ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+        'max_tokens' => (int) env('IQ_ANTHROPIC_MAX_TOKENS', 1024),
+        'base_url' => env('IQ_ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
+        'version' => env('IQ_ANTHROPIC_VERSION', '2023-06-01'),
         // Hard cap on tool-calling round trips per query, so a confused
         // model can't loop forever against a product's connector.
-        'max_tool_iterations' => (int) env('ANTHROPIC_MAX_TOOL_ITERATIONS', 4),
+        'max_tool_iterations' => (int) env('IQ_ANTHROPIC_MAX_TOOL_ITERATIONS', 4),
     ],
 
     /*
@@ -47,7 +56,7 @@ return [
             ],
             'tools' => [
                 [
-                    'name' => 'field.technicians_working_today',
+                    'name' => 'field_technicians_working_today',
                     'description' => 'Count and status breakdown of technicians working today. count = on_site + en_route only (excludes off_today and available).',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/technicians-working-today'],
                     'parameters' => [
@@ -57,7 +66,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'field.technicians',
+                    'name' => 'field_technicians',
                     'description' => "List of technicians matching a status/date filter. For a past date, buckets come from that day's recorded timesheets only.",
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/technicians'],
                     'parameters' => [
@@ -70,7 +79,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'field.jobs_today',
+                    'name' => 'field_jobs_today',
                     'description' => "Jobs scheduled for today. 'count' reflects the status filter, but 'completed' and 'open' in the response are always totals regardless of the filter.",
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/jobs-today'],
                     'parameters' => [
@@ -82,7 +91,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'field.job_completion_rate',
+                    'name' => 'field_job_completion_rate',
                     'description' => 'Percentage of scheduled jobs completed in the given period. Weeks start Monday.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/job-completion-rate'],
                     'parameters' => [
@@ -105,7 +114,7 @@ return [
             'auth' => ['type' => 'forward_user_token'],
             'tools' => [
                 [
-                    'name' => 'view.rfi_count',
+                    'name' => 'view_rfi_count',
                     'description' => 'Count of RFIs matching a status, for the current tenant/project.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/rfi-count'],
                     'parameters' => [
@@ -117,7 +126,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'view.rfis',
+                    'name' => 'view_rfis',
                     'description' => 'List of RFIs matching a filter.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/rfis'],
                     'parameters' => [
@@ -130,7 +139,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'view.submittal_count',
+                    'name' => 'view_submittal_count',
                     'description' => 'Count of submittals by status.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/submittal-count'],
                     'parameters' => [
@@ -142,7 +151,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'view.overdue_items',
+                    'name' => 'view_overdue_items',
                     'description' => 'Count and breakdown of all overdue items (RFIs, submittals, punch list) across the project.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/overdue-items'],
                     'parameters' => [
@@ -161,7 +170,7 @@ return [
             'auth' => ['type' => 'forward_user_token'],
             'tools' => [
                 [
-                    'name' => 'financial.invoice_summary',
+                    'name' => 'financial_invoice_summary',
                     'description' => 'Count and total amount of invoices matching a status/period.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/invoice-summary'],
                     'parameters' => [
@@ -174,7 +183,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'financial.budget_vs_actual',
+                    'name' => 'financial_budget_vs_actual',
                     'description' => 'Budgeted vs actual spend for a project/period.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/budget-vs-actual'],
                     'parameters' => [
@@ -187,7 +196,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'financial.cash_position',
+                    'name' => 'financial_cash_position',
                     'description' => "Current cash balance across the tenant's connected accounts.",
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/cash-position'],
                     'parameters' => [
@@ -197,7 +206,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'financial.overdue_receivables',
+                    'name' => 'financial_overdue_receivables',
                     'description' => 'Count and total of invoices overdue for payment from clients.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/overdue-receivables'],
                     'parameters' => [
@@ -216,7 +225,7 @@ return [
             'auth' => ['type' => 'forward_user_token'],
             'tools' => [
                 [
-                    'name' => 'flow.task_count',
+                    'name' => 'flow_task_count',
                     'description' => 'Count of workflow tasks matching a status.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/task-count'],
                     'parameters' => [
@@ -228,7 +237,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'flow.tasks',
+                    'name' => 'flow_tasks',
                     'description' => 'List of tasks matching a filter.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/tasks'],
                     'parameters' => [
@@ -241,7 +250,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'flow.approval_queue',
+                    'name' => 'flow_approval_queue',
                     'description' => "Count and list of items currently awaiting the requesting user's approval.",
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/approval-queue'],
                     'parameters' => [
@@ -251,7 +260,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'flow.average_cycle_time',
+                    'name' => 'flow_average_cycle_time',
                     'description' => 'Average time tasks/approvals take to complete in a workflow.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/average-cycle-time'],
                     'parameters' => [
@@ -273,7 +282,7 @@ return [
             'auth' => ['type' => 'forward_user_token'],
             'tools' => [
                 [
-                    'name' => 'estimate.open_estimates_count',
+                    'name' => 'estimate_open_estimates_count',
                     'description' => 'Count of estimates matching a status.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/open-estimates-count'],
                     'parameters' => [
@@ -285,7 +294,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'estimate.estimates',
+                    'name' => 'estimate_estimates',
                     'description' => 'List of estimates matching a filter.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/estimates'],
                     'parameters' => [
@@ -298,7 +307,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'estimate.win_rate',
+                    'name' => 'estimate_win_rate',
                     'description' => 'Percentage of submitted estimates that converted to won jobs in a period.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/win-rate'],
                     'parameters' => [
@@ -310,7 +319,7 @@ return [
                     ],
                 ],
                 [
-                    'name' => 'estimate.pending_approval',
+                    'name' => 'estimate_pending_approval',
                     'description' => 'Count and list of estimates awaiting internal approval before being sent to the client.',
                     'endpoint' => ['method' => 'GET', 'path' => '/api/iq/pending-approval'],
                     'parameters' => [

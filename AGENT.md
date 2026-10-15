@@ -54,7 +54,7 @@ Every connector tool registered with Claude follows this shape (mirrors each pro
 
 ```json
 {
-  "name": "field.technicians_working_today",
+  "name": "field_technicians_working_today",
   "description": "Returns the count and breakdown of technicians clocked in or en route today, scoped to the user's tenant.",
   "endpoint": "GET /api/iq/technicians-working-today",
   "parameters": {},
