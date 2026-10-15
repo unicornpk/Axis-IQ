@@ -17,7 +17,31 @@ AxisField's connector does **not** use the end user's own session/token — `nos
 - Responses: `401` bad/missing token, `422` bad params, `405` anything other than `GET`.
 - Rate limit: 120 requests/min.
 
-**Consequence worth flagging to the product owner:** because the token is shared rather than per-user, Axis IQ answers the same for every AxisField user who can open the chat widget — there's no way for this connector to restrict, say, a technician from asking about headcount across the whole company the way the office might. If that's not acceptable, it needs an AxisField-side permission check (e.g. only expose the widget to office/admin roles in the frontend embed, or add real per-user auth to this endpoint later) — Axis IQ Core has no visibility into AxisField's roles to enforce this itself.
+**Role-scoping: resolved, not by this connector.** The shared token itself still has no concept of "which AxisField user is asking" — that gap is real and is exactly why it got closed one layer up instead: AxisField's own `/iq/api/query` proxy (see "Full integration architecture" below) checks the signed-in user's role before ever reaching this connector, and only admin/dispatcher/supervisor get through. Technicians and clients get a `403` and never see the chat widget at all. This connector doc no longer needs to flag that as an open question — it's handled server-side, upstream of the shared token.
+
+**Axis IQ Core itself also requires caller authentication** (added after this connector flagged that Core's `/api/query` had none — see `core/app/Http/Middleware/VerifyIqCallerToken.php`): every caller, AxisField's proxy included, must send `Authorization: Bearer <IQ_CALLER_TOKEN>` to Core. This is a *different* secret from `iq_api_token` above — one authenticates AxisField→Field, the other authenticates AxisField's proxy→Axis IQ Core.
+
+## Full integration architecture (as implemented by AxisField)
+
+```
+Browser (dispatcher/supervisor/admin only)
+  → GET /js/axis-iq-widget.js            (served BY AxisField itself, not iq.axisone.si —
+                                            works today, before Core has a public host)
+  → POST /iq/api/query  {query}           (AxisField's own route: signed-in session required,
+                                            role-gated, JSON-only, CSRF-exempt but same-site only,
+                                            20 req/min/user, 500-char query cap)
+      AxisField backend:
+        - ignores any client-supplied "product" value, always sends "field"
+        - forwards {query, product:"field"} to <Axis IQ Core>/api/query
+        - adds Authorization: Bearer <IQ_CALLER_TOKEN> if the owner set one
+          in AxisField Settings → "Axis IQ assistant" → "Access secret"
+        - 60s timeout; any upstream failure → 502 to the browser
+        - returns ONLY {answer} to the browser — never forwards tools_called,
+          internal errors, or anything else Core returned
+  ← {answer}
+```
+
+`iq_api_token` and the caller access secret never reach a browser — tested by asserting both are absent from page HTML and never echoed back in Settings. Once Axis IQ Core has a real hosted URL, the owner just types it into AxisField Settings; no code change needed on AxisField's side.
 
 ## Data model (as implemented, differs slightly from the original draft contract)
 

@@ -4,6 +4,21 @@ return [
 
     /*
     |--------------------------------------------------------------------
+    | Caller authentication
+    |--------------------------------------------------------------------
+    |
+    | The secret a caller (a product's own backend, e.g. AxisField's /iq
+    | proxy) must send as `Authorization: Bearer <this value>` to use
+    | Core at all. Without it, a shared-token product would be queryable
+    | by anyone who finds Core's URL, since Core holds that product's
+    | downstream secret itself and would use it regardless of who asked.
+    | See app/Http/Middleware/VerifyIqCallerToken.php.
+    |
+    */
+    'caller_token' => env('IQ_CALLER_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------
     | Anthropic / Claude
     |--------------------------------------------------------------------
     |
