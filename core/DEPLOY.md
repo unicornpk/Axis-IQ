@@ -29,9 +29,17 @@ Upload **both** `axisiq/` and `axisiq-app/` so they end up as siblings — e.g. 
 
 `APP_KEY`, `IQ_CALLER_TOKEN`, and `IQ_INSTALL_CODE` are pre-generated per deployment — don't reuse them across environments. **`IQ_CALLER_TOKEN`'s value also needs to go into AxisField's own Settings → "Axis IQ assistant" → "Access secret"**, or AxisField's proxy will get `401`s.
 
-## 3. Set the PHP version
+## 3. Set the PHP version and extensions
 
 In cPanel → MultiPHP Manager (or Select PHP Version), set **PHP 8.3+** for the `axisiq` (and `axisiq-app`, if it lets you set it per-folder) path. Laravel 13 requires it.
+
+**If the per-domain selector is locked** ("Site Isolation denied" or similar — happens on some cPanel configs), the account-wide default PHP version applies instead, which may be older. Fix: add this line at the very top of `axisiq/.htaccess` (adjust the version suffix to whatever's actually available — check cPanel's PHP selector for the exact handler name):
+```apache
+AddHandler application/x-httpd-alt-php83___lsphp .php
+```
+Confirm it worked by temporarily visiting `axisiq/install.php` (it'll fail fast with a clear PHP-version error if still on the wrong version) rather than guessing.
+
+**Required extensions** (cPanel → Select PHP Version → Extensions, account-wide): `pdo_sqlite` (we default to SQLite — `pdo_mysql` instead if you switch, see `.env`), `mbstring`, `xml`, `fileinfo`, `openssl`, `tokenizer`, `ctype`, `curl`.
 
 ## 4. Run the one-time install (migrate the database)
 
@@ -60,6 +68,14 @@ should return a real answer, not an error.
 ## 6. Point AxisField at it
 
 In AxisField → Settings → "Axis IQ assistant": set the address to `https://unicornaxis.com/axisiq` and the Access secret to the same `IQ_CALLER_TOKEN` value from step 2.
+
+## Notes on the package itself
+
+- **`axisiq-app/` placement.** It ships as a sibling of `axisiq/` with its own deny-all `.htaccess` as a backstop. If your account lets you, it's strictly safer to place it **entirely outside the web root** instead (e.g. `/home/<cpaneluser>/axisiq-core`, not under `public_html/` at all) — the `.htaccess` deny-all still applies either way, this just removes the "what if `.htaccess` doesn't get honored" risk entirely. Either placement works with the package as shipped; `axisiq/index.php`'s `../axisiq-app/...` paths assume sibling placement, so if you move it outside `public_html/` entirely, update those two paths in `index.php` to match (e.g. `../../axisiq-core/vendor/autoload.php`).
+- **`axisiq/index.php` calls `$app->usePublicPath(__DIR__)`** after bootstrapping — without it, any Laravel helper that resolves `public_path()` (e.g. `filemtime(public_path(...))` inside the framework) looks for a `public/` folder that doesn't exist in this split layout and fails.
+- **`axisiq/.user.ini` raises `max_execution_time` to 180s.** Claude's tool-calling loop can make several round trips (Anthropic + a connector call, each with their own timeout) before answering — a shared host's default 30-60s limit can kill a legitimate slow request mid-flight.
+- **Don't name a file or folder under `axisiq/` the same as a route** (e.g. a literal folder called `api`). Apache's rewrite skips existing real files/directories, so it would shadow the route instead of reaching `index.php`.
+- **PHP-FPM/LSAPI session note:** `install.php`'s install route needs no session and works even before the `sessions` table (if you ever switch `SESSION_DRIVER` to `database`) exists — keep `SESSION_DRIVER=file` (the shipped default) unless you have a specific reason to change it.
 
 ## Troubleshooting
 

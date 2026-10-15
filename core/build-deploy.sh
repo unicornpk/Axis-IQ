@@ -37,13 +37,17 @@ find "$OUT/app-src/vendor" -maxdepth 3 -name ".git" -type d -exec rm -rf {} +
 
 echo "==> Assembling axisiq/ (web root)"
 cp -r "$OUT/app-src/public-orig/." "$OUT/dist/axisiq/"
-# index.php must point at ../axisiq-app, not Laravel's default ../
+# index.php must point at ../axisiq-app, not Laravel's default ../, and
+# must tell Laravel its public path explicitly — without usePublicPath(),
+# helpers like filemtime(public_path(...)) look in the wrong (default
+# ../public, which doesn't exist here) location and fail.
 sed -i \
   -e "s#require __DIR__.'/../vendor/autoload.php';#require __DIR__.'/../axisiq-app/vendor/autoload.php';#" \
-  -e "s#__DIR__.'/../bootstrap/app.php'#__DIR__.'/../axisiq-app/bootstrap/app.php'#" \
+  -e "s#\$app = require_once __DIR__.'/../bootstrap/app.php';#\$app = require_once __DIR__.'/../axisiq-app/bootstrap/app.php';\n\$app->usePublicPath(__DIR__);#" \
   -e "s#__DIR__.'/../storage/framework/maintenance.php'#__DIR__.'/../axisiq-app/storage/framework/maintenance.php'#" \
   "$OUT/dist/axisiq/index.php"
 cp "$HERE/deploy/install.php" "$OUT/dist/axisiq/install.php"
+cp "$HERE/deploy/.user.ini" "$OUT/dist/axisiq/.user.ini"
 
 echo "==> Assembling axisiq-app/ (private)"
 cp -r "$OUT/app-src"/{app,bootstrap,config,database,resources,routes,storage,vendor,artisan,composer.json,composer.lock} "$OUT/dist/axisiq-app/"
