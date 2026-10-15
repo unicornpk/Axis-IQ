@@ -15,7 +15,9 @@ Axis IQ is the AI query & reporting assistant for the **AxisOne Suite** (axisone
 | Estimate | unicornaxis.com/estimate/ | estimate.axisone.si/app |
 | Field | field.unicornaxis.com/app | field.axisone.si/app |
 | — suite landing — | — | axisone.si (root) |
-| Axis IQ | — | iq.axisone.si (assumption — confirm) |
+| Axis IQ | **unicornaxis.com/axisiq — live** | iq.axisone.si (planned on migration) |
+
+**Axis IQ Core is live** at `https://unicornaxis.com/axisiq`, deployed to the same shared host as the other products (no shell access there — see `core/DEPLOY.md` for how that was handled). Verified end-to-end against the real Field connector. `unicornaxis.com/iq` is a separate, unrelated static marketing page — not this app, left alone on purpose.
 
 **Domain plan (confirmed):** all products are currently on `unicornaxis.com` during development. On completion, everything moves to `axisone.si`, one subdomain per product, each subdomain's **root folder serving the marketing/landing page** and the **actual app one folder down** (`/app`) — mirroring the current `unicornaxis.com/<product>/app` pattern, just promoted to its own subdomain. The bare `axisone.si` root is the overall suite landing page.
 
@@ -170,7 +172,7 @@ In production, `.env` simply overrides each `IQ_<PRODUCT>_URL` to its `*.axisone
 | Flow | not started | |
 | Estimate | not started | |
 
-`core/` (Axis IQ Core) is scaffolded and runs: Laravel app, `POST /api/query` route, Claude tool-calling orchestrator, per-product config/auth, conversation audit log. **Verified live end-to-end against Field** — real `ANTHROPIC_API_KEY` and `IQ_FIELD_API_TOKEN` configured, real questions answered correctly, conversation log recording tool calls and answers.
+**`core/` (Axis IQ Core) is live** at `https://unicornaxis.com/axisiq` — Laravel app, `POST /api/query` route (caller-authenticated via `IQ_CALLER_TOKEN`), Claude tool-calling orchestrator, per-product config/auth, conversation audit log. Deployed to shared hosting with no shell access (see `core/DEPLOY.md`). Verified against the live hosted URL, not just locally: real questions answered correctly through the full chain, conversation log recording tool calls and answers.
 
 ## 8. Roadmap
 
@@ -180,9 +182,9 @@ In production, `.env` simply overrides each `IQ_<PRODUCT>_URL` to its `*.axisone
 
 ## 9. Open questions to confirm with the team
 
-1. Hosting/subdomain for Axis IQ Core itself (`iq.axisone.si` assumed — not yet confirmed).
+1. ~~Hosting/subdomain for Axis IQ Core itself~~ **Resolved:** live at `unicornaxis.com/axisiq`. Move to `iq.axisone.si` when the broader domain migration happens.
 2. Auth mechanism each remaining product uses — **do not assume "forward the user's token" by default.** Field turned out to use a single shared service token instead, because its auth model had no per-user scoping to forward. Confirm each product's real model before building its connector; `config/axis_iq.php` has a placeholder `'auth' => ['type' => 'forward_user_token']` for the other four that must be checked, not trusted.
-3. Field-specific: since its connector uses one shared token, any AxisField user who can open the Axis IQ widget gets the same answers — there's no per-role restriction (e.g. a technician could ask company-wide headcount questions same as an office admin). Decide whether that's acceptable, or whether the widget should only be embedded for certain roles.
+3. ~~Field-specific role-scoping~~ **Resolved:** AxisField's own `/iq/api/query` proxy checks the signed-in user's role before the shared token is ever used — only admin/dispatcher/supervisor get through, technicians/clients get `403`. See `connectors/field.md` "Full integration architecture."
 4. Whether all 5 products share one Laravel codebase/DB or are fully separate apps — affects how much of the connector code can be shared.
 5. Rate limiting / cost controls on the Claude API calls (per-user, per-tenant quotas). Field's connector itself caps at 120 req/min.
 6. Cutover plan: does Axis IQ get built/tested against the current `unicornaxis.com` dev URLs first and then just re-pointed via `.env` on the day each product moves to `axisone.si`, or does it wait for the move to be complete?
