@@ -1,0 +1,12 @@
+# This folder must NEVER be directly web-accessible — it holds .env
+# (secrets), application source, and vendor/. Only axisiq/index.php
+# should reach it, via PHP require, not HTTP. Belt-and-suspenders: deny
+# all direct web requests here even if the host's document root is ever
+# misconfigured to expose it.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>
