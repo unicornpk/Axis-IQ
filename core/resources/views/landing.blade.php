@@ -59,7 +59,7 @@
     <nav>
       <a href="#how-it-works">How it works</a>
       <a href="#products">Products</a>
-      <a href="/demo">Try the demo</a>
+      <a href="{{ url('/demo') }}">Try the demo</a>
     </nav>
   </header>
 
@@ -68,7 +68,7 @@
     <h1>Ask your projects<br><span>anything.</span></h1>
     <p class="sub">Axis IQ answers plain-language questions about your AxisOne data, right inside the product you're already using — no reports to pull, no dashboards to learn.</p>
     <div class="cta-row">
-      <a class="btn btn-accent" href="/demo">Try a live demo →</a>
+      <a class="btn btn-accent" href="{{ url('/demo') }}">Try a live demo →</a>
       <a class="btn btn-ghost" href="#products">See what's connected</a>
     </div>
 
@@ -101,7 +101,7 @@
 
   <footer>
     <span>Axis IQ — part of the AxisOne Suite.</span>
-    <span><a href="/demo">Try the demo</a></span>
+    <span><a href="{{ url('/demo') }}">Try the demo</a></span>
   </footer>
 </div>
 </body>

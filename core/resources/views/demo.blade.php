@@ -41,7 +41,7 @@
 <div class="wrap">
   <div class="top">
     <div class="brand"><span class="mark">IQ</span> Axis IQ — demo</div>
-    <a class="back" href="/">← back</a>
+    <a class="back" href="{{ url('/') }}">← back</a>
   </div>
 
   <div class="banner">Illustrative demo — sample data only, not a live connection to any real project.</div>
